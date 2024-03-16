@@ -37,32 +37,32 @@ class SeeATodoListAT {
     @Test
     fun `List owners can see their lists`() {
         val app = startTheApplication(lists)
-        app.runScenario {
-            frank.canSeeTheList("shopping", shoppingItems, it)
-            bob.canSeeTheList("gardening", gardenItems, it)
-        }
+        app.runScenario(
+            frank.canSeeTheList("shopping", shoppingItems),
+            bob.canSeeTheList("gardening", gardenItems)
+        )
     }
 
     @Test
     fun `Only owners can see their lists`() {
         val app = startTheApplication(lists)
-        app.runScenario {
-            frank.cannotSeeTheList("gardening", it)
-            bob.cannotSeeTheList("shopping", it)
-        }
+        app.runScenario(
+            frank.cannotSeeTheList("gardening"),
+            bob.cannotSeeTheList("shopping")
+        )
     }
-}
 
-fun startTheApplication(lists: Map<User, List<ToDoList>>): ApplicationForAT {
-    val port = 8081 // different from main
-    val server = Zettai(lists).asServer(Jetty(port))
-    server.start()
+    fun startTheApplication(lists: Map<User, List<ToDoList>>): ApplicationForAT {
+        val port = 8081 // different from main
+        val server = Zettai(lists).asServer(Jetty(port))
+        server.start()
 
-    val client = ClientFilters
-        .SetBaseUriFrom(Uri.of("http://localhost:$port/"))
-        .then(JettyClient())
+        val client = ClientFilters
+            .SetBaseUriFrom(Uri.of("http://localhost:$port/"))
+            .then(JettyClient())
 
-    return ApplicationForAT(client, server)
+        return ApplicationForAT(client, server)
+    }
 }
 
 interface ScenarioActor {
@@ -72,29 +72,28 @@ interface ScenarioActor {
 private fun createList(listName: String, items: List<String>): ToDoList =
     ToDoList(ListName(listName), items.map(::ToDoItem))
 
+interface Actions {
+    fun getToDoList(user: String, listName: String): ToDoList?
+}
+
+typealias Step = Actions.() -> Unit
+
 class ToDoListOwner(override val name: String) : ScenarioActor {
-    fun canSeeTheList(
-        listName: String,
-        items: List<String>,
-        app: ApplicationForAT
-    ) {
+    fun canSeeTheList(listName: String, items: List<String>): Step = {
         val expectedList = createList(listName, items)
-        val list = app.getToDoList(name, listName)
+        val list = getToDoList(name, listName)
         expectThat(list).isEqualTo(expectedList)
     }
 
-    fun cannotSeeTheList(
-        listName: String,
-        app: ApplicationForAT
-    ) {
+    fun cannotSeeTheList(listName: String): Step = {
         expectThrows<AssertionFailedError> {
-            app.getToDoList("bob", listName)
+            getToDoList("bob", listName)
         }
     }
 }
 
-class ApplicationForAT(val client: HttpHandler, val server: AutoCloseable) {
-    fun getToDoList(user: String, listName: String): ToDoList {
+class ApplicationForAT(val client: HttpHandler, val server: AutoCloseable) : Actions {
+    override fun getToDoList(user: String, listName: String): ToDoList {
         val response = client(Request(Method.GET, "/todo/$user/$listName"))
 
         return if (response.status == Status.OK)
@@ -120,11 +119,13 @@ class ApplicationForAT(val client: HttpHandler, val server: AutoCloseable) {
             .orEmpty()
 
     private fun extractItemDesc(matchResult: MatchResult): String =
-        matchResult.value.substringAfter("<td>").dropLast(1)
+        matchResult.value
+            .substringAfter("<td>")
+            .dropLast(1)
 
-    fun runScenario(steps: (ApplicationForAT) -> Unit) {
+    fun runScenario(vararg steps: Step) {
         server.use {
-            steps(this)
+            steps.onEach { step -> step(this) }
         }
     }
 }
