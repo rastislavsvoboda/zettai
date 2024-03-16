@@ -1,11 +1,8 @@
 package sk.rsvoboda.zettai.stories
 
-import org.example.sk.rsvoboda.zettai.Zettai
-import org.example.sk.rsvoboda.zettai.Zettai.*
 import org.http4k.client.JettyClient
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
@@ -13,6 +10,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+
+import sk.rsvoboda.zettai.webservice.Zettai
+import sk.rsvoboda.zettai.domain.ListName
+import sk.rsvoboda.zettai.domain.ToDoItem
+import sk.rsvoboda.zettai.domain.ToDoList
+import sk.rsvoboda.zettai.domain.User
 
 class SeeATodoListAT {
     @Test

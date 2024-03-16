@@ -1,9 +1,15 @@
-package org.example.sk.rsvoboda.zettai
+package sk.rsvoboda.zettai.webservice
 
 import org.http4k.core.*
 import org.http4k.routing.bind
 import org.http4k.routing.path
 import org.http4k.routing.routes
+
+import sk.rsvoboda.zettai.domain.ListName
+import sk.rsvoboda.zettai.domain.ToDoItem
+import sk.rsvoboda.zettai.domain.ToDoList
+import sk.rsvoboda.zettai.domain.User
+import sk.rsvoboda.zettai.ui.HtmlPage
 
 data class Zettai(val lists: Map<User, List<ToDoList>>) : HttpHandler {
     val routes = routes(
@@ -51,10 +57,5 @@ data class Zettai(val lists: Map<User, List<ToDoList>>) : HttpHandler {
     fun createResponse(html: HtmlPage): Response =
         Response(Status.OK).body(html.raw)
 
-    data class ToDoList(val listName: ListName, val items: List<ToDoItem>)
-    data class ListName(val name: String)
-    data class User(val name: String)
-    data class ToDoItem(val description: String)
-    enum class ToDoStatus { Todo, InProgress, Done, Blocked }
-    data class HtmlPage(val raw: String)
+    //enum class ToDoStatus { Todo, InProgress, Done, Blocked }
 }

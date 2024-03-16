@@ -9,7 +9,7 @@ class AdditionTest {
     fun randomNatural() = Random.nextInt(from = 1, until = 100_000_000)
 
     @Test
-    fun `addition` () {
+    fun `addition testing` () {
         expectThat(1+1).isEqualTo(2)
     }
 
