@@ -53,7 +53,7 @@ data class Zettai(val hub: ZettaiHub) : HttpHandler {
 </html>""".trimIndent()
         )
 
-    fun renderItems(items: List<ToDoItem>): String =
+    private fun renderItems(items: List<ToDoItem>): String =
         items.map { """<tr><td>${it.description}</td></tr>""".trimIndent() }.joinToString("")
 
     fun createResponse(html: HtmlPage): Response =

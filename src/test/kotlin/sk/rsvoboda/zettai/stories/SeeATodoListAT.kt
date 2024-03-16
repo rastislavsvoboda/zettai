@@ -17,8 +17,6 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.api.expectThrows
 
-import sk.rsvoboda.zettai.webservice.Zettai
-
 class SeeATodoListAT {
     val frank = ToDoListOwner("Frank")
     val shoppingItems = listOf("carrots", "apples", "milk")

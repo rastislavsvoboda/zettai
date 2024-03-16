@@ -44,6 +44,10 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
     override fun getToDoList(user: User, listName: ListName): ToDoList? {
         val response = callZettai(Method.GET, todoListUrl(user, listName))
 
+        // TODO: hack for now -- if "List unknown" exception
+        if (response.status == Status.INTERNAL_SERVER_ERROR)
+            return null
+
         if (response.status == Status.NOT_FOUND)
             return null
 
@@ -64,24 +68,45 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
     fun extractItemsFromPage(html: HtmlPage): List<ToDoItem> =
         html.parse()
             .select("tr")
-            .filter { it.select("td").size == 3 }
-            .map {
-                Triple(
-                    it.select("td")[0].text().orEmpty(),
-                    it.select("td")[1].text().toIsoLocalDate(),
-                    it.select("td")[2].text().orEmpty().toStatus(),
-                )
-            }
-            .map {
-                (name, date, status ) ->
-                    ToDoItem(name, date, status)
-            }
+            .filter { it.select("td").size == 1 }
+            .map { it.select("td")[0].text().orEmpty() }
+            .map { name -> ToDoItem(name) }
+
+//    private fun extractItemsFromPage(html: HtmlPage): List<ToDoItem> {
+//
+//        val _1 = html.parse()
+//            .select("tr")
+//            .filter { it.select("td").size == 1 }
+//            .map { it.select("td")[0].text().orEmpty() }
+//
+//        val _3 = html.parse()
+//            .select("tr")
+//            .filter { it.select("td").size == 3 }
+//            .map {
+//                Triple(
+//                    it.select("td")[0].text().orEmpty(),
+//                    it.select("td")[1].text().toIsoLocalDate(),
+//                    it.select("td")[2].text().orEmpty().toStatus()
+//                )
+//            }
+//
+//        if (_1.size > 0)
+//            return _1.map { name -> ToDoItem(name) }
+//
+//        if (_3.size > 0)
+//            return _3.map { (name, date, status) -> ToDoItem(name, date, status) }
+//
+//        return emptyList()
+//    }
 
     private fun callZettai(method: Method, path: String): Response =
         client(log(Request(method, "http://localhost:$zettaiPort/$path")))
 
     override fun SeeATodoListDDT.ToDoListOwner.`starts with a list`(listName: String, items: List<String>) {
-        TODO("Not yet implemented")
+        fetcher.assignListToUser(
+            user,
+            ToDoList(ListName.fromUntrustedOrThrow(listName), items.map { ToDoItem(it) })
+        )
     }
 
     fun <T> log(something: T): T {

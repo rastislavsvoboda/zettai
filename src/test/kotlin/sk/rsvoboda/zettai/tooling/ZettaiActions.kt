@@ -11,7 +11,6 @@ import sk.rsvoboda.zettai.stories.SeeATodoListDDT
 interface ZettaiActions : DdtActions<DdtProtocol> {
     fun SeeATodoListDDT.ToDoListOwner.`starts with a list`(listName: String, items: List<String>)
     fun getToDoList(user: User, listName: ListName): ToDoList?
-
 }
 
 typealias ZettaiDDT = DomainDrivenTest<ZettaiActions>
