@@ -22,6 +22,7 @@ dependencies {
     testImplementation ("com.ubertob.pesticide:pesticide-core:1.6.5")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("io.strikt:strikt-core:0.34.0")
+    testImplementation("org.jsoup:jsoup:1.12.1")
 }
 
 tasks.test {

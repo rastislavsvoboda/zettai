@@ -4,14 +4,12 @@ import org.http4k.core.*
 import org.http4k.routing.bind
 import org.http4k.routing.path
 import org.http4k.routing.routes
+import sk.rsvoboda.zettai.domain.*
 
-import sk.rsvoboda.zettai.domain.ListName
-import sk.rsvoboda.zettai.domain.ToDoItem
-import sk.rsvoboda.zettai.domain.ToDoList
-import sk.rsvoboda.zettai.domain.User
 import sk.rsvoboda.zettai.ui.HtmlPage
 
-data class Zettai(val lists: Map<User, List<ToDoList>>) : HttpHandler {
+data class Zettai(val hub: ZettaiHub) : HttpHandler {
+//data class Zettai(val lists: Map<User, List<ToDoList>>) : HttpHandler {
     val routes = routes(
         "/todo/{user}/{list}" bind Method.GET to ::showList
     )
@@ -33,9 +31,13 @@ data class Zettai(val lists: Map<User, List<ToDoList>>) : HttpHandler {
     }
 
     fun fetchListContent(listId: Pair<User, ListName>): ToDoList =
-        lists[listId.first]
-            ?.firstOrNull({ it.listName == listId.second })
+        hub.getList(listId.first, listId.second)
             ?: error("List unknown")
+
+//    fun fetchListContent(listId: Pair<User, ListName>): ToDoList =
+//        lists[listId.first]
+//            ?.firstOrNull({ it.listName == listId.second })
+//            ?: error("List unknown")
 
     fun renderHtml(todoList: ToDoList): HtmlPage =
         HtmlPage(
@@ -57,5 +59,5 @@ data class Zettai(val lists: Map<User, List<ToDoList>>) : HttpHandler {
     fun createResponse(html: HtmlPage): Response =
         Response(Status.OK).body(html.raw)
 
-    //enum class ToDoStatus { Todo, InProgress, Done, Blocked }
+
 }

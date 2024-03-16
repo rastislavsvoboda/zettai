@@ -1,21 +1,31 @@
 package sk.rsvoboda.zettai.webservice
 
-import org.http4k.core.*
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-
-import sk.rsvoboda.zettai.domain.User
-import sk.rsvoboda.zettai.domain.ToDoItem
-import sk.rsvoboda.zettai.domain.ToDoList
-import sk.rsvoboda.zettai.domain.ListName
+import sk.rsvoboda.zettai.domain.*
+import java.time.LocalDate
 
 fun main() {
-    val items = listOf("write chapter", "insert code", "draw diagrams")
-    val toDoList = ToDoList(ListName("book"), items.map(::ToDoItem))
-    val lists = mapOf(User("uberto") to listOf(toDoList))
+    val fetcher = ToDoListFetcherFromMap(storeWithExampleData())
+    val hub = ToDoListHub(fetcher)
 
-    val app: HttpHandler = Zettai(lists)
-    app.asServer(Jetty(8080)).start() // starting the server
+    Zettai(hub).asServer(Jetty(8080)).start()
 
     println("Server started at http://localhost:8080/todo/uberto/book")
+}
+
+fun storeWithExampleData(): ToDoListStore = mutableMapOf(
+    User("uberto") to mutableMapOf(exampleToDoList().listName to exampleToDoList())
+)
+
+private fun exampleToDoList(): ToDoList {
+    return ToDoList(
+        listName = ListName.fromTrusted("book"),
+        items = listOf(
+            ToDoItem("prepare the diagram", LocalDate.now().plusDays(1), ToDoStatus.Done),
+            ToDoItem("rewrite explanations", LocalDate.now().plusDays(2), ToDoStatus.InProgress),
+            ToDoItem("finish the chapter"),
+            ToDoItem("draft next chapter")
+        )
+    )
 }
