@@ -47,11 +47,12 @@ fun renderPage(todoList: ToDoList): HtmlPage =
 private fun ToDoList.renderItems() =
     items.map(::renderItem).joinToString("")
 
-private fun renderItem(it: ToDoItem):String =
+private fun renderItem(it: ToDoItem): String =
     """<tr>
               <td>${it.description}</td>
               <td>${it.dueDate?.toIsoString().orEmpty()}</td>
-              <td>${it.status}</td>    </tr>        
+              <td>${it.status}</td>
+      </tr>
     """.trimIndent()
 
 fun LocalDate.toIsoString(): String = format(DateTimeFormatter.ISO_LOCAL_DATE)

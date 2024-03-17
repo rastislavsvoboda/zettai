@@ -1,8 +1,13 @@
 package sk.rsvoboda.zettai.domain
 
 import java.time.LocalDate
+import java.util.*
 
-
+fun String.capitalize() = replaceFirstChar {
+    if (it.isLowerCase()) it.titlecase(
+        Locale.getDefault()
+    ) else it.toString()
+}
 
 val pathElementPattern =Regex(pattern = "[A-Za-z0-9]+")
 

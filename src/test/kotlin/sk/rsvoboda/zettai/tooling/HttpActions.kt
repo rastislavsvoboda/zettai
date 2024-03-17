@@ -86,6 +86,29 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
         )
     }
 
+    override fun addListItem(user: User, listName: ListName, item: ToDoItem) {
+        val response = submitToZettai(
+            todoListUrl(user, listName),
+            listOf(
+                "itemname" to item.description,
+                "itemdue" to item.dueDate?.toString()
+            )
+        )
+
+        expectThat(response.status).isEqualTo(Status.SEE_OTHER)
+    }
+
+    private fun submitToZettai(path: String, webForm: List<Pair<String, String?>>): Response =
+        client(
+            log(
+                Request(
+                    Method.POST,
+                    "http://localhost:$zettaiPort/$path"
+                )
+                    .body(webForm.toBody())
+            )
+        )
+
     fun <T> log(something: T): T {
         println("--- $something")
         return something

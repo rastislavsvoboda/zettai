@@ -53,7 +53,6 @@ class SeeATodoListAT {
 
     fun startTheApplication(lists: Map<User, List<ToDoList>>): ApplicationForAT {
         val port = 8081 // different from main
-//        val hub = ToDoListHub(lists)
         val server = Zettai2(lists).asServer(Jetty(port))
         server.start()
 
@@ -93,7 +92,6 @@ class SeeATodoListAT {
             val listName = ListName(extractListName(nameRegex, html))
             val itemsRegex = "<td>.*?<".toRegex()
             val items = itemsRegex.findAll(html)
-                // TODO: fill details
                 .map { ToDoItem(extractItemDesc(it)) }.toList()
 
             return ToDoList(listName, items)
@@ -123,7 +121,6 @@ interface ScenarioActor {
 }
 
 private fun createList(listName: String, items: List<String>): ToDoList =
-    // TODO: fill details
     ToDoList(ListName(listName), items.map( { ToDoItem(it)}))
 
 interface Actions {
