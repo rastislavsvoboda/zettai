@@ -182,6 +182,4 @@ data class Zettai2(val lists: Map<User, List<ToDoList>>) : HttpHandler {
         items.map {
             """<tr><td>${it.description}</td></tr>""".trimIndent()
         }.joinToString("")
-
-
 }

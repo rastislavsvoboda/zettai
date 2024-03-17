@@ -9,16 +9,16 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
+import org.http4k.core.body.toBody
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import sk.rsvoboda.zettai.domain.*
-import sk.rsvoboda.zettai.stories.SeeATodoListDDT
 import sk.rsvoboda.zettai.ui.HtmlPage
 import sk.rsvoboda.zettai.ui.toIsoLocalDate
 import sk.rsvoboda.zettai.ui.toStatus
-import sk.rsvoboda.zettai.webservice.Zettai
+import sk.rsvoboda.zettai.webserer.Zettai
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
@@ -44,10 +44,6 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
     override fun getToDoList(user: User, listName: ListName): ToDoList? {
         val response = callZettai(Method.GET, todoListUrl(user, listName))
 
-        // TODO: hack for now -- if "List unknown" exception
-        if (response.status == Status.INTERNAL_SERVER_ERROR)
-            return null
-
         if (response.status == Status.NOT_FOUND)
             return null
 
@@ -65,44 +61,25 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
 
     private fun HtmlPage.parse(): Document = Jsoup.parse(raw)
 
-    fun extractItemsFromPage(html: HtmlPage): List<ToDoItem> =
+    private fun extractItemsFromPage(html: HtmlPage): List<ToDoItem> =
         html.parse()
             .select("tr")
-            .filter { it.select("td").size == 1 }
-            .map { it.select("td")[0].text().orEmpty() }
-            .map { name -> ToDoItem(name) }
-
-//    private fun extractItemsFromPage(html: HtmlPage): List<ToDoItem> {
-//
-//        val _1 = html.parse()
-//            .select("tr")
-//            .filter { it.select("td").size == 1 }
-//            .map { it.select("td")[0].text().orEmpty() }
-//
-//        val _3 = html.parse()
-//            .select("tr")
-//            .filter { it.select("td").size == 3 }
-//            .map {
-//                Triple(
-//                    it.select("td")[0].text().orEmpty(),
-//                    it.select("td")[1].text().toIsoLocalDate(),
-//                    it.select("td")[2].text().orEmpty().toStatus()
-//                )
-//            }
-//
-//        if (_1.size > 0)
-//            return _1.map { name -> ToDoItem(name) }
-//
-//        if (_3.size > 0)
-//            return _3.map { (name, date, status) -> ToDoItem(name, date, status) }
-//
-//        return emptyList()
-//    }
+            .filter { it.select("td").size == 3 }
+            .map {
+                Triple(
+                    it.select("td")[0].text().orEmpty(),
+                    it.select("td")[1].text().toIsoLocalDate(),
+                    it.select("td")[2].text().orEmpty().toStatus()
+                )
+            }
+            .map { (name, date, status) ->
+                ToDoItem(name, date, status)
+            }
 
     private fun callZettai(method: Method, path: String): Response =
         client(log(Request(method, "http://localhost:$zettaiPort/$path")))
 
-    override fun SeeATodoListDDT.ToDoListOwner.`starts with a list`(listName: String, items: List<String>) {
+    override fun ToDoListOwner.`starts with a list`(listName: String, items: List<String>) {
         fetcher.assignListToUser(
             user,
             ToDoList(ListName.fromUntrustedOrThrow(listName), items.map { ToDoItem(it) })

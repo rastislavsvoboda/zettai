@@ -27,7 +27,7 @@ data class ToDoList(val listName: ListName, val items: List<ToDoItem>) {
 
 data class ToDoItem(
     val description: String,
-    val date: LocalDate? = null,
+    val dueDate: LocalDate? = null,
     val status: ToDoStatus = ToDoStatus.Todo)
 
 enum class ToDoStatus { Todo, InProgress, Done, Blocked }

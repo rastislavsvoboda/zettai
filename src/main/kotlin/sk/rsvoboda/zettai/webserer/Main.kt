@@ -1,4 +1,4 @@
-package sk.rsvoboda.zettai.webservice
+package sk.rsvoboda.zettai.webserer
 
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
