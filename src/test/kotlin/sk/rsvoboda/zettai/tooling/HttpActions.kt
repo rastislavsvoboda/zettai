@@ -72,9 +72,7 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
                     it.select("td")[2].text().orEmpty().toStatus()
                 )
             }
-            .map { (name, date, status) ->
-                ToDoItem(name, date, status)
-            }
+            .map { (name, date, status) -> ToDoItem(name, date, status) }
 
     private fun callZettai(method: Method, path: String): Response =
         client(log(Request(method, "http://localhost:$zettaiPort/$path")))
