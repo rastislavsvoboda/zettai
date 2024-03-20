@@ -13,4 +13,7 @@ data class ToDoListFetcherFromMap(
             val listMap = value ?: mutableMapOf()
             listMap.apply { put(list.listName, list) }
         }?.let { list }
+
+    override fun getAll(user: User): List<ListName> =
+        store[user]?.keys?.toList() ?: emptyList()
 }

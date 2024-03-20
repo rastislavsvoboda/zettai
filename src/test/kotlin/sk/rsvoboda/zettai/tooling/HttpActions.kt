@@ -107,6 +107,25 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
             )
         )
 
+    override fun allUserList(user: User): List<ListName> {
+        val response = callZettai(Method.GET, allUserListsUrl(user))
+        expectThat(response.status).isEqualTo(Status.OK)
+        val html = HtmlPage(response.bodyString())
+        val names = extractListNamesFromPage(html)
+        return names.map { name -> ListName.fromTrusted(name) }
+    }
+
+    private fun allUserListsUrl(user: User) =
+        "todo/${user.name}"
+
+    private fun extractListNamesFromPage(html: HtmlPage): List<String> =
+        html.parse()
+            .select("tr")
+            .mapNotNull {
+                it.select("td").firstOrNull()?.text()
+            }
+
+    // helpers
     fun <T> log(something: T): T {
         println("--- $something")
         return something

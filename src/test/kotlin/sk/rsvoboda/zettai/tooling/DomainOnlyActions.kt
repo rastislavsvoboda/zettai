@@ -25,4 +25,7 @@ class DomainOnlyActions : ZettaiActions {
     override fun addListItem(user: User, listName: ListName, item: ToDoItem) {
         hub.addItemToList(user, listName, item)
     }
+
+    override fun allUserList(user: User): List<ListName> =
+        hub.getLists(user) ?: emptyList()
 }

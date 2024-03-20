@@ -7,9 +7,7 @@ import sk.rsvoboda.zettai.domain.ToDoList
 import sk.rsvoboda.zettai.domain.User
 import strikt.api.Assertion
 import strikt.api.expectThat
-import strikt.assertions.containsExactlyInAnyOrder
-import strikt.assertions.isNotNull
-import strikt.assertions.isNull
+import strikt.assertions.*
 
 data class ToDoListOwner(override val name: String) : DdtActor<ZettaiActions>() {
     val user = User(name)
@@ -32,10 +30,24 @@ data class ToDoListOwner(override val name: String) : DdtActor<ZettaiActions>() 
             expectThat(list).isNull()
         }
 
-    fun `can add #item to #listname`(itemName:String, listName:String) =
+    fun `can add #item to #listname`(itemName: String, listName: String) =
         step(itemName, listName) {
             val item = ToDoItem(itemName)
             addListItem(user, ListName(listName), item)
+        }
+
+    fun `cannot see any list`() =
+        step {
+            val lists = allUserList(user)
+            expectThat(lists).isEmpty()
+        }
+
+    fun `can see the lists #listNames`(expectedLists: Set<String>) =
+        step(expectedLists) {
+            val lists = allUserList(user)
+            expectThat(lists)
+                .map(ListName::name)
+                .containsExactly(expectedLists)
         }
 
     private val Assertion.Builder<ToDoList>.itemNames

@@ -2,6 +2,7 @@ package sk.rsvoboda.zettai.domain
 
 import org.junit.jupiter.api.Test
 import sk.rsvoboda.zettai.domain.tooling.*
+import sk.rsvoboda.zettai.fp.discardUnless
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
@@ -44,5 +45,19 @@ class ToDoListTest {
                 expectThat(ListName.fromUntrusted(it))
                     .isEqualTo(null)
             }
+    }
+
+    @Test
+    fun `discardUnless works`() {
+        val itemInProgress = ToDoItem("doing something", status = ToDoStatus.InProgress)
+        val itemBlocked = ToDoItem("must do something", status = ToDoStatus.Blocked)
+
+        expectThat(
+            itemInProgress.discardUnless { status == ToDoStatus.InProgress }
+        ).isEqualTo(itemInProgress)
+
+        expectThat(
+            itemBlocked.discardUnless { status == ToDoStatus.InProgress }
+        ).isEqualTo(null)
     }
 }
