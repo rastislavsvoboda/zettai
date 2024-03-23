@@ -11,12 +11,15 @@ fun <T> T.printIt(prefix: String = ">"): T =
         println("$prefix $this")
     }
 
-fun <T:Any> tryOrNull(block: () -> T): T? =
-    try{
+fun <T : Any> tryOrNull(block: () -> T): T? =
+    try {
         block()
     } catch (e: Exception) {
         null
     }
+
+fun <T, R> liftList(f: (T) -> R): (List<T>) -> List<R> =
+    { c: List<T> -> c.map(f) }
 
 fun <T> T.discardUnless(predicate: T.() -> Boolean): T? =
     if (predicate())

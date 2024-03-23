@@ -1,63 +1,57 @@
 package sk.rsvoboda.zettai.commands
 
-import sk.rsvoboda.zettai.domain.ListName
-import sk.rsvoboda.zettai.domain.ToDoList
-import sk.rsvoboda.zettai.domain.ToDoListUpdatableFetcher
-import sk.rsvoboda.zettai.domain.User
+import sk.rsvoboda.zettai.domain.*
 import sk.rsvoboda.zettai.events.*
-
-// returns null in case of error
-typealias CommandHandler<CMD, EVENT> = (CMD) -> List<EVENT>?
+import sk.rsvoboda.zettai.fp.asFailure
+import sk.rsvoboda.zettai.fp.asSuccess
 
 interface ToDoListRetriever {
     fun retrieveByName(user: User, listName: ListName): ToDoListState?
 }
 
+typealias ToDoListCommandOutcome = ZettaiOutcome<List<ToDoListEvent>>
+
 class ToDoListCommandHandler(
-    private val entityRetriever: ToDoListRetriever,
-    var readModel: ToDoListUpdatableFetcher // temporary !
+    private val entityRetriever: ToDoListRetriever
 ) :
-        (ToDoListCommand) -> List<ToDoListEvent>? {
-    override fun invoke(command: ToDoListCommand): List<ToDoListEvent>? =
+        (ToDoListCommand) -> ToDoListCommandOutcome {
+    override fun invoke(command: ToDoListCommand): ToDoListCommandOutcome =
         when (command) {
             is CreateToDoList -> command.execute()
             is AddToDoItem -> command.execute()
         }
 
-    private fun CreateToDoList.execute(): List<ToDoListEvent>? =
-        entityRetriever.retrieveByName(user, name)
-            ?.let { listState ->
-                when (listState) {
-                    InitialState -> {
-                        readModel.assignListToUser(
-                            user,
-                            ToDoList(name, emptyList())
-                        )
-                        // TODO: where is toList() ?
-                        //ListCreated(id,user,name).toList()
-                        listOf(ListCreated(id, user, name))
-                    }
+    private fun CreateToDoList.execute(): ToDoListCommandOutcome {
+        val listState = entityRetriever.retrieveByName(user, name) ?: InitialState
 
-                    else -> null // command failed
-                }
-            }
+        return when (listState) {
+            InitialState ->
+                ListCreated(id, user, name).asCommandSuccess()
 
-    private fun AddToDoItem.execute(): List<ToDoListEvent>? =
+            is ActiveToDoList,
+            is OnHoldToDoList,
+            is ClosedToDoList -> InconsistentStateError(this, listState).asFailure()
+        }
+    }
+
+    private fun AddToDoItem.execute(): ToDoListCommandOutcome =
         entityRetriever.retrieveByName(user, name)
             ?.let { listState ->
                 when (listState) {
                     is ActiveToDoList -> {
                         if (listState.items.any { it.description == item.description })
-                            null // cannot have 2 items with same name
+                            ToDoListCommandError("cannot have 2 items with same name").asFailure()
                         else {
-                            readModel.addItemToList(user, listState.name, item)
-                            listOf(ItemAdded(listState.id, item))
+                            ItemAdded(listState.id, item).asCommandSuccess()
                         }
                     }
 
                     InitialState,
                     is OnHoldToDoList,
-                    is ClosedToDoList -> null // command fail
+                    is ClosedToDoList -> InconsistentStateError(this, listState).asFailure()
                 }
-            }
+            } ?: ToDoListCommandError("list $name not found").asFailure()
+
+    private fun ToDoListEvent.asCommandSuccess(): ZettaiOutcome<List<ToDoListEvent>> =
+        listOf(this).asSuccess()
 }
