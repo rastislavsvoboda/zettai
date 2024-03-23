@@ -15,6 +15,8 @@ import sk.rsvoboda.zettai.ui.renderListsPage
 import java.time.LocalDate
 
 class Zettai(val hub: ZettaiHub) : HttpHandler {
+    override fun invoke(request: Request): Response = httpHandler(request)
+
     val httpHandler = routes(
         "/ping" bind Method.GET to { Response(Status.OK) },
         "/todo/{user}/{listname}" bind Method.GET to ::getTodoList,
@@ -47,8 +49,6 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
             ?.let { Response(Status.SEE_OTHER).header("Location", "/todo/${user.name}/${listName.name}") }
             ?: Response(Status.BAD_REQUEST)
     }
-
-    override fun invoke(request: Request): Response = httpHandler(request)
 
     private fun getTodoList(request: Request): Response {
         val user = request.extractUser()

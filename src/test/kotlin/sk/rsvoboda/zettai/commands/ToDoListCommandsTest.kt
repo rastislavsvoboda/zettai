@@ -51,4 +51,12 @@ internal class ToDoListCommandsTest {
         val duplicatedRes = handle(cmd)
         expectThat(duplicatedRes).isNull()
     }
+
+    @Test
+    fun `Add items fails if the list doesn't exists`() {
+        val cmd = AddToDoItem(user, name, randomItem())
+        val res = handle(cmd)
+
+        expectThat(res).isNull()
+    }
 }

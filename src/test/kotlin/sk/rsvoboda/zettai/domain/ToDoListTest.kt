@@ -6,7 +6,6 @@ import sk.rsvoboda.zettai.fp.discardUnless
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
-
 class ToDoListTest {
     val validCharset = uppercase + lowercase + digits + "-"
     val invalidCharset = " !@#$%^&*()+={}[]|:;'<>,./?\u2202\u2203\u2204\u2205"

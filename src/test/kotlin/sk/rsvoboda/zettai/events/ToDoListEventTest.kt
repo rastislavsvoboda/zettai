@@ -61,6 +61,5 @@ internal class ToDoListEventTest {
         expectThat(list).isEqualTo(
             OnHoldToDoList(id, user, name, listOf(item1, item2, item3), reason)
         )
-
     }
 }

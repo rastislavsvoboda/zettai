@@ -4,7 +4,6 @@ import com.ubertob.pesticide.core.*
 import sk.rsvoboda.zettai.tooling.ToDoListOwner
 import sk.rsvoboda.zettai.tooling.ZettaiDDT
 import sk.rsvoboda.zettai.tooling.allActions
-import java.time.LocalDate
 
 class SeeAllTheToDoListsDDT : ZettaiDDT(allActions()) {
     val carol by NamedActor(::ToDoListOwner)
