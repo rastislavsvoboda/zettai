@@ -17,12 +17,22 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
         "/ping" bind Method.GET to { Response(Status.OK) },
         "/todo/{user}/{listname}" bind Method.GET to ::getTodoList,
         "/todo/{user}/{listname}" bind Method.POST to ::addNewItem,
-        "/todo/{user}" bind Method.GET to ::getAllLists
+        "/todo/{user}" bind Method.GET to ::getAllLists,
+        "/todo/{user}" bind Method.POST to ::createNewList
     )
 
-//    private fun Request.extractListNameFromForm(formName: String) =
-//        form(formName)
-//            ?.let(ListName.Companion::fromUntrusted)
+    private fun createNewList(request: Request): Response {
+        val user = request.extractUser()
+        val listName = request.extractListNameFromForm("listname")
+        return listName
+            ?.let { hub.createToDoList(user, it) }
+            ?.let { Response(Status.SEE_OTHER).header("Location", "/todo/${user.name}") }
+            ?: Response(Status.BAD_REQUEST)
+    }
+
+    private fun Request.extractListNameFromForm(formName: String) =
+        form(formName)
+            ?.let(ListName.Companion::fromUntrusted)
 
     private fun addNewItem(request: Request): Response {
 

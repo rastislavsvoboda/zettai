@@ -9,6 +9,7 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
+import org.http4k.core.body.Form
 import org.http4k.core.body.toBody
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
@@ -124,6 +125,15 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
             .mapNotNull {
                 it.select("td").firstOrNull()?.text()
             }
+
+    override fun createList(user: User, listName: ListName) {
+        val response = submitToZettai(allUserListsUrl(user), newListForm(listName))
+
+        expectThat(response.status).isEqualTo(Status.SEE_OTHER)
+    }
+
+    private fun newListForm(listName: ListName): Form =
+        listOf("listname" to listName.name)
 
     // helpers
     fun <T> log(something: T): T {

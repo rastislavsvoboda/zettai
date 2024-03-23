@@ -28,4 +28,8 @@ class DomainOnlyActions : ZettaiActions {
 
     override fun allUserList(user: User): List<ListName> =
         hub.getLists(user) ?: emptyList()
+
+    override fun createList(user: User, listName: ListName) {
+        TODO("Not yet implemented")
+    }
 }
