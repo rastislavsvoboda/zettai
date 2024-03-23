@@ -1,8 +1,9 @@
 package sk.rsvoboda.zettai.domain
 
+import sk.rsvoboda.zettai.commands.ToDoListCommand
+
 interface ZettaiHub {
     fun getList(user: User, listName: ListName): ToDoList?
-    fun addItemToList(user: User, listName: ListName, item: ToDoItem): ToDoList?
     fun getLists(user: User): List<ListName>?
-    fun createToDoList(user: User, listName: ListName): ToDoList?
+    fun handle(command: ToDoListCommand): ToDoListCommand?
 }

@@ -1,19 +1,23 @@
 package sk.rsvoboda.zettai.domain
 
-class ToDoListHub(private val fetcher: ToDoListUpdatableFetcher) : ZettaiHub {
-    override fun getList(user: User, listName: ListName): ToDoList? =
-        fetcher(user, listName)
+import sk.rsvoboda.zettai.commands.ToDoListCommand
+import sk.rsvoboda.zettai.commands.ToDoListCommandHandler
+import sk.rsvoboda.zettai.events.ToDoListEvent
+import sk.rsvoboda.zettai.fp.EventPersister
 
-    override fun addItemToList(user: User, listName: ListName, item: ToDoItem): ToDoList? =
-        fetcher(user, listName)?.run {
-            val newList = copy(items = items.filterNot { it.description == item.description } + item)
-            fetcher.assignListToUser(user, newList)
-        }
+class ToDoListHub(
+    private val fetcher: ToDoListUpdatableFetcher,
+    val commandHandler: ToDoListCommandHandler,
+    val persistEvents: EventPersister<ToDoListEvent>
+) : ZettaiHub {
+    override fun handle(command: ToDoListCommand): ToDoListCommand? =
+        commandHandler(command)
+            ?.let(persistEvents)
+            ?.let { command } // returning the command (in case of success)
+
+    override fun getList(user: User, listName: ListName): ToDoList? =
+        fetcher.get(user, listName)
 
     override fun getLists(user: User): List<ListName>? =
         fetcher.getAll(user)
-
-    override fun createToDoList(user: User, listName: ListName): ToDoList? {
-        TODO("Not yet implemented")
-    }
 }

@@ -5,9 +5,11 @@ import org.http4k.core.body.form
 import org.http4k.routing.bind
 import org.http4k.routing.path
 import org.http4k.routing.routes
+import sk.rsvoboda.zettai.commands.AddToDoItem
+import sk.rsvoboda.zettai.commands.CreateToDoList
 import sk.rsvoboda.zettai.domain.*
+import sk.rsvoboda.zettai.fp.tryOrNull
 import sk.rsvoboda.zettai.ui.renderPage
-
 import sk.rsvoboda.zettai.ui.HtmlPage
 import sk.rsvoboda.zettai.ui.renderListsPage
 import java.time.LocalDate
@@ -25,7 +27,8 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
         val user = request.extractUser()
         val listName = request.extractListNameFromForm("listname")
         return listName
-            ?.let { hub.createToDoList(user, it) }
+            ?.let { CreateToDoList(user, it) }
+            ?.let(hub::handle)
             ?.let { Response(Status.SEE_OTHER).header("Location", "/todo/${user.name}") }
             ?: Response(Status.BAD_REQUEST)
     }
@@ -38,15 +41,11 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
 
         val user = request.extractUser()
         val listName = request.extractListName()
-
-        // todo: use extract??
-
-        val item = request.form("itemname")
-            ?.let { ToDoItem(it) }
-            ?: return Response(Status.BAD_REQUEST)
-        return hub.addItemToList(user, listName, item)
+        return request.extractItem()
+            ?.let { AddToDoItem(user, listName, it) }
+            ?.let(hub::handle)
             ?.let { Response(Status.SEE_OTHER).header("Location", "/todo/${user.name}/${listName.name}") }
-            ?: Response(Status.NOT_FOUND)
+            ?: Response(Status.BAD_REQUEST)
     }
 
     override fun invoke(request: Request): Response = httpHandler(request)
@@ -78,9 +77,9 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
     private fun Request.extractListName(): ListName =
         path("listname").orEmpty().let(ListName.Companion::fromUntrustedOrThrow)
 
-//    private fun Request.extractItem(): ToDoItem? {
-//        val name = form("itemname") ?: return null
-//        val duedate = tryOrNull { LocalDate.parse(form("itemdue")) }
-//        return ToDoItem(name, duedate)
-//    }
+    private fun Request.extractItem(): ToDoItem? {
+        val name = form("itemname") ?: return null
+        val duedate = tryOrNull { LocalDate.parse(form("itemdue")) }
+        return ToDoItem(name, duedate)
+    }
 }

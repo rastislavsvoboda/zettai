@@ -2,12 +2,20 @@ package sk.rsvoboda.zettai.webserer
 
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
+import sk.rsvoboda.zettai.commands.ToDoListCommandHandler
 import sk.rsvoboda.zettai.domain.*
+import sk.rsvoboda.zettai.events.ToDoListEventStore
+import sk.rsvoboda.zettai.events.ToDoListEventStreamerInMemory
 import java.time.LocalDate
 
 fun main() {
     val fetcher = ToDoListFetcherFromMap(storeWithExampleData())
-    val hub = ToDoListHub(fetcher)
+    val streamer = ToDoListEventStreamerInMemory()
+    val eventStore = ToDoListEventStore(streamer)
+
+    val commandHandler = ToDoListCommandHandler(eventStore, fetcher)
+
+    val hub = ToDoListHub(fetcher, commandHandler, eventStore)
 
     Zettai(hub).asServer(Jetty(8080)).start()
 

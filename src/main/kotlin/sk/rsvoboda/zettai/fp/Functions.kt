@@ -11,6 +11,13 @@ fun <T> T.printIt(prefix: String = ">"): T =
         println("$prefix $this")
     }
 
+fun <T:Any> tryOrNull(block: () -> T): T? =
+    try{
+        block()
+    } catch (e: Exception) {
+        null
+    }
+
 fun <T> T.discardUnless(predicate: T.() -> Boolean): T? =
     if (predicate())
         this

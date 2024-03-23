@@ -15,20 +15,22 @@ import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.junit.jupiter.api.Assertions.fail
+import sk.rsvoboda.zettai.commands.AddToDoItem
+import sk.rsvoboda.zettai.commands.CreateToDoList
 import sk.rsvoboda.zettai.domain.*
 import sk.rsvoboda.zettai.ui.HtmlPage
 import sk.rsvoboda.zettai.ui.toIsoLocalDate
 import sk.rsvoboda.zettai.ui.toStatus
-import sk.rsvoboda.zettai.webserer.Zettai
 import strikt.api.expectThat
+import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
 data class HttpActions(val env: String = "local") : ZettaiActions {
-    private val fetcher = ToDoListFetcherFromMap(mutableMapOf())
-    private val hub = ToDoListHub(fetcher)
-
     val zettaiPort = 8000 // different from the on in main
-    val server = Zettai(hub).asServer(Jetty(zettaiPort))
+    val zettai = prepareZettaiForTests()
+    val server = zettai.asServer(Jetty(zettaiPort))
+    val hub = zettai.hub
 
     val client = JettyClient()
 
@@ -79,10 +81,17 @@ data class HttpActions(val env: String = "local") : ZettaiActions {
         client(log(Request(method, "http://localhost:$zettaiPort/$path")))
 
     override fun ToDoListOwner.`starts with a list`(listName: String, items: List<String>) {
-        fetcher.assignListToUser(
-            user,
-            ToDoList(ListName.fromUntrustedOrThrow(listName), items.map { ToDoItem(it) })
+        val list = ListName.fromTrusted(listName)
+        val events = hub.handle(
+            CreateToDoList(user, list)
         )
+        events ?: fail("Failed to create list $listName for $name")
+        val created = items.mapNotNull {
+            hub.handle(
+                AddToDoItem(user, list, ToDoItem(it))
+            )
+        }
+        expectThat(created).hasSize(items.size)
     }
 
     override fun addListItem(user: User, listName: ListName, item: ToDoItem) {
