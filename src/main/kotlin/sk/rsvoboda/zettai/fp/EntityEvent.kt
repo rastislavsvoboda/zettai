@@ -15,3 +15,6 @@ interface EntityEvent {
 interface EntityState<in E : EntityEvent> {
     fun combine(event: E): EntityState<E>
 }
+
+typealias EventStreamer<E> = (EntityId) -> List<E>?
+typealias EventPersister<E> = (Iterable<E>) -> List<E>
