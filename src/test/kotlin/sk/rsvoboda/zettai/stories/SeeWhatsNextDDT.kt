@@ -6,7 +6,7 @@ import sk.rsvoboda.zettai.tooling.ZettaiDDT
 import sk.rsvoboda.zettai.tooling.allActions
 import java.time.LocalDate
 
-class SeeWhatsNext : ZettaiDDT(allActions()) {
+class SeeWhatsNextDDT : ZettaiDDT(allActions()) {
     val alice by NamedActor(::ToDoListOwner)
 
     @DDT
