@@ -26,9 +26,8 @@ class DomainOnlyActions : ZettaiActions {
     override fun allUserLists(user: User): ZettaiOutcome<List<ListName>> =
         hub.getLists(user)
 
-//    override fun createList(user: User, listName: ListName) {
-//        hub.handle(CreateToDoList(user, listName))
-//    }
+    override fun whatsNext(user: User): ZettaiOutcome<List<ToDoItem>> =
+        hub.whatsNext(user)
 
     override fun ToDoListOwner.`starts with a list`(listName: String, items: List<String>) {
         val list = ListName.fromTrusted(listName)

@@ -42,6 +42,11 @@ class ToDoListProjection(eventFetcher: FetchStoredEvents<ToDoListEvent>) :
             .firstOrNull { it.user == user && it.list.listName == listName }
             ?.list
 
+    fun findAllActiveListId(user: User): List<EntityId> =
+        allRows()
+            .filter { it.value.user == user && it.value.active }
+            .map { ToDoListId.fromRowId(it.key) }
+
     companion object {
         fun eventProjector(e: ToDoListEvent): List<DeltaRow<ToDoListProjectionRow>> =
             when (e) {

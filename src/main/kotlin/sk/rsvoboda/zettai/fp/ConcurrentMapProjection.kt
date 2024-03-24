@@ -3,11 +3,9 @@ package sk.rsvoboda.zettai.fp
 import sk.rsvoboda.zettai.events.EventSeq
 import java.util.concurrent.atomic.AtomicReference
 
-
 interface InMemoryProjection<R : Any, E : EntityEvent> : Projection<R, E> {
     fun allRows(): Map<RowId, R>
 }
-
 
 data class ConcurrentMapProjection<R : Any, E : EntityEvent>(
     override val eventFetcher: FetchStoredEvents<E>,

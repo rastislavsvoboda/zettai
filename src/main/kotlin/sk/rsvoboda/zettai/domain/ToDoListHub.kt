@@ -4,16 +4,15 @@ import sk.rsvoboda.zettai.commands.ToDoListCommand
 import sk.rsvoboda.zettai.commands.ToDoListCommandHandler
 import sk.rsvoboda.zettai.events.ToDoListEvent
 import sk.rsvoboda.zettai.events.ToDoListState
-import sk.rsvoboda.zettai.fp.EventPersister
-import sk.rsvoboda.zettai.fp.OutcomeError
-import sk.rsvoboda.zettai.fp.failIfNull
+import sk.rsvoboda.zettai.fp.*
+import sk.rsvoboda.zettai.queries.ItemProjectionRow
 import sk.rsvoboda.zettai.queries.ToDoListQueryRunner
 
 sealed class ZettaiError : OutcomeError
 data class InvalidRequestError(override val msg: String) : ZettaiError()
 data class ToDoListCommandError(override val msg: String) : ZettaiError()
 data class InconsistentStateError(val command: ToDoListCommand, val state: ToDoListState) : ZettaiError() {
-    override val msg = "Command $command cannot be applied tp state $state"
+    override val msg = "Command $command cannot be applied to state $state"
 }
 
 class ToDoListHub(
@@ -39,5 +38,13 @@ class ToDoListHub(
                 .findAll(user)
                 .failIfNull(InvalidRequestError("User $user not found!"))
                 .transform { it.toList() }
+        }.runIt()
+
+    override fun whatsNext(user: User): ZettaiOutcome<List<ToDoItem>> =
+        queryRunner {
+            listProjection.findAllActiveListId(user)
+                .failIfEmpty(InvalidRequestError("User $user not found!"))
+                .transform { userLists -> itemProjection.findWhatsNext(10, userLists) }
+                .transform { it.map(ItemProjectionRow::item) }
         }.runIt()
 }

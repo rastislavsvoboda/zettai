@@ -15,6 +15,7 @@ import sk.rsvoboda.zettai.fp.recover
 import sk.rsvoboda.zettai.ui.HtmlPage
 import sk.rsvoboda.zettai.ui.renderListPage
 import sk.rsvoboda.zettai.ui.renderListsPage
+import sk.rsvoboda.zettai.ui.renderWhatsNextPage
 import java.time.LocalDate
 
 class Zettai(val hub: ZettaiHub) : HttpHandler {
@@ -25,7 +26,8 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
         "/todo/{user}/{listname}" bind Method.GET to ::getTodoList,
         "/todo/{user}/{listname}" bind Method.POST to ::addNewItem,
         "/todo/{user}" bind Method.GET to ::getAllLists,
-        "/todo/{user}" bind Method.POST to ::createNewList
+        "/todo/{user}" bind Method.POST to ::createNewList,
+        "/whatsnext/{user}" bind Method.GET to ::whatsNext
     )
 
     private fun createNewList(request: Request): Response {
@@ -66,11 +68,20 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
     fun toResponse(htmlPage: HtmlPage): Response =
         Response(Status.OK).body(htmlPage.raw)
 
-    private fun getAllLists(req: Request): Response {
-        val user = req.extractUser()
+    private fun getAllLists(request: Request): Response {
+        val user = request.extractUser()
             .onFailure { return Response(Status.BAD_REQUEST).body(it.msg) }
         return hub.getLists(user)
             .transform { renderListsPage(user, it) }
+            .transform(::toResponse)
+            .recover { Response(Status.NOT_FOUND).body(it.msg) }
+    }
+
+    private fun whatsNext(request: Request): Response {
+        val user = request.extractUser()
+            .onFailure { return Response(Status.BAD_REQUEST).body(it.msg) }
+        return hub.whatsNext(user)
+            .transform { renderWhatsNextPage(user, it) }
             .transform(::toResponse)
             .recover { Response(Status.NOT_FOUND).body(it.msg) }
     }

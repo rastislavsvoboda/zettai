@@ -9,6 +9,7 @@ import sk.rsvoboda.zettai.domain.tooling.expectSuccess
 import strikt.api.Assertion
 import strikt.api.expectThat
 import strikt.assertions.*
+import java.time.LocalDate
 
 data class ToDoListOwner(override val name: String) : DdtActor<ZettaiActions>() {
     val user = User(name)
@@ -49,6 +50,19 @@ data class ToDoListOwner(override val name: String) : DdtActor<ZettaiActions>() 
     fun `can add #item to #listname`(itemName: String, listName: String) =
         step(itemName, listName) {
             val item = ToDoItem(itemName)
+            addListItem(user, ListName.fromUntrustedOrThrow(listName), item)
+        }
+
+    fun `can see that #itemname is the next task to do`(itemName: String) =
+        step(itemName) {
+            val items = whatsNext(user).expectSuccess()
+
+            expectThat(items.firstOrNull()?.description.orEmpty()).isEqualTo(itemName)
+        }
+
+    fun `can add #itemname to the #listname due to #duedate`(itemName: String, listName: String, dueDate: LocalDate) =
+        step(itemName, listName, dueDate) {
+            val item = ToDoItem(itemName, dueDate)
             addListItem(user, ListName.fromUntrustedOrThrow(listName), item)
         }
 

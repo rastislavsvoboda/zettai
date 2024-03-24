@@ -6,6 +6,8 @@ data class EntityId(val raw: UUID) {
     companion object {
         fun mint() =
             EntityId(UUID.randomUUID())
+        fun fromRowId(rowId: RowId) =
+            EntityId(UUID.fromString(rowId.id))
     }
 }
 

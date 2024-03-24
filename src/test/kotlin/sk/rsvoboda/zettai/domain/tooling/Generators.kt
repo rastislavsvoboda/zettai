@@ -6,9 +6,10 @@ const val uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const val lowercase = "abcdefghijklmnopqrstuvwxyz"
 const val digits = "0123456789"
 
-fun stringsGenerator(charSet: String, minLen: Int, maxLen: Int): Sequence<String> = generateSequence {
-    randomString(charSet, minLen, maxLen)
-}
+fun stringsGenerator(charSet: String, minLen: Int, maxLen: Int): Sequence<String> =
+    generateSequence {
+        randomString(charSet, minLen, maxLen)
+    }
 
 fun randomString(charSet: String, minLen: Int, maxLen: Int) =
     StringBuilder().run {
