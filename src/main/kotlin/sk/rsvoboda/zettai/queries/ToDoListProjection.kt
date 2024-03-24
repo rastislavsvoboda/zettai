@@ -31,10 +31,9 @@ class ToDoListProjection(eventFetcher: FetchStoredEvents<ToDoListEvent>) :
         eventFetcher,
         ::eventProjector
     ) {
-    //    fun findAll(user: User): Sequence<ListName> =
-    fun findAll(user: User): List<ListName>? =
+    fun findAll(user: User): Sequence<ListName> =
         allRows().values
-//            .asSequence()
+            .asSequence()
             .filter { it.user == user }
             .map { it.list.listName }
 
@@ -61,5 +60,5 @@ class ToDoListProjection(eventFetcher: FetchStoredEvents<ToDoListEvent>) :
     }
 }
 
-private fun ToDoListEvent.rowId(): RowId = RowId(id.raw.toString())
-
+private fun ToDoListEvent.rowId(): RowId =
+    RowId(id.raw.toString())

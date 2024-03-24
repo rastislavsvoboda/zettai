@@ -17,7 +17,8 @@ data class ConcurrentMapProjection<R : Any, E : EntityEvent>(
 
     private val lastEventRef: AtomicReference<EventSeq> = AtomicReference(EventSeq(-1))
 
-    override fun allRows(): Map<RowId, R> = rowsReference.get()
+    override fun allRows(): Map<RowId, R> =
+        rowsReference.get()
 
     override fun applyDelta(eventSeq: EventSeq, deltas: List<DeltaRow<R>>) {
         deltas.forEach { delta ->
@@ -33,5 +34,6 @@ data class ConcurrentMapProjection<R : Any, E : EntityEvent>(
         }.also { lastEventRef.getAndSet(eventSeq) }
     }
 
-    override fun lastProjectedEvent(): EventSeq = lastEventRef.get()
+    override fun lastProjectedEvent(): EventSeq =
+        lastEventRef.get()
 }

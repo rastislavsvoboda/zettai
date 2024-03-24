@@ -1,6 +1,5 @@
 package sk.rsvoboda.zettai.fp
 
-
 data class ProjectionQuery<T>(
     val projections: Set<Projection<*, *>>,
     val runner: () -> T

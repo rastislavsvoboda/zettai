@@ -7,7 +7,6 @@ import sk.rsvoboda.zettai.events.ToDoListId
 
 sealed class ToDoListCommand
 
-
 data class CreateToDoList(
     val user: User,
     val name: ListName

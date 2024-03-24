@@ -38,10 +38,14 @@ interface OutcomeError {
     val msg: String
 }
 
-fun <E : OutcomeError> E.asFailure(): Outcome<E, Nothing> = Failure(this)
-fun <T> T.asSuccess(): Outcome<Nothing, T> = Success(this)
+fun <E : OutcomeError> E.asFailure(): Outcome<E, Nothing> =
+    Failure(this)
 
-fun <T : Any, E : OutcomeError> T?.failIfNull(error: E): Outcome<E, T> = this?.asSuccess() ?: error.asFailure()
+fun <T> T.asSuccess(): Outcome<Nothing, T> =
+    Success(this)
+
+fun <T : Any, E : OutcomeError> T?.failIfNull(error: E): Outcome<E, T> =
+    this?.asSuccess() ?: error.asFailure()
 
 fun <C : Collection<*>, E : OutcomeError> C.failIfEmpty(error: E): Outcome<E, C> =
     if (isEmpty()) error.asFailure() else this.asSuccess()

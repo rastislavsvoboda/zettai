@@ -36,6 +36,6 @@ internal class ToDoListCommandsTest {
         val cmd = AddToDoItem(user, name, randomItem())
 
         val res = handler(cmd).expectFailure()
-        expectThat(res).isA<InconsistentStateError>()
+        expectThat(res).isA<ToDoListCommandError>()
     }
 }

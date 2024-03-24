@@ -3,17 +3,20 @@ package sk.rsvoboda.zettai.domain
 import java.time.LocalDate
 import java.util.*
 
-fun String.capitalize() = replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(
-        Locale.getDefault()
-    ) else it.toString()
-}
+fun String.capitalize() =
+    replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase(
+            Locale.getDefault()
+        ) else it.toString()
+    }
 
 val pathElementPattern = Regex(pattern = "[A-Za-z0-9-]+")
 
 data class ListName internal constructor(val name: String) {
     companion object {
-        fun fromTrusted(name: String): ListName = ListName(name)
+        fun fromTrusted(name: String): ListName =
+            ListName(name)
+
         fun fromUntrustedOrThrow(name: String): ListName =
             fromUntrusted(name) ?: throw IllegalArgumentException("Invalid list name $name")
 
@@ -27,9 +30,8 @@ data class ListName internal constructor(val name: String) {
 
 data class ToDoList(val listName: ListName, val items: List<ToDoItem>) {
     companion object {
-        fun build(
-            listName: String, items: List<String>
-        ): ToDoList = ToDoList(ListName.fromUntrustedOrThrow(listName), items.map { ToDoItem(it) })
+        fun build(listName: String, items: List<String>): ToDoList =
+            ToDoList(ListName.fromUntrustedOrThrow(listName), items.map { ToDoItem(it) })
     }
 }
 

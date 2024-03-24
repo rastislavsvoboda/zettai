@@ -40,10 +40,6 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
             .recover { Response(Status.UNPROCESSABLE_ENTITY).body(it.msg) }
     }
 
-    private fun Request.extractListNameFromForm(formName: String) =
-        form(formName)
-            ?.let(ListName.Companion::fromUntrusted)
-
     private fun addNewItem(request: Request): Response {
         val user = request.extractUser()
             .recover { User("anonumous") }
@@ -86,7 +82,6 @@ class Zettai(val hub: ZettaiHub) : HttpHandler {
 
     private fun Request.extractListName(): ZettaiOutcome<ListName> =
         path("listname")
-
             .orEmpty().let(ListName.Companion::fromUntrustedOrThrow)
             .failIfNull(InvalidRequestError("Invalid list name in path: $this"))
 

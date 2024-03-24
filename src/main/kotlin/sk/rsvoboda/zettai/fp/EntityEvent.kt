@@ -4,7 +4,8 @@ import java.util.*
 
 data class EntityId(val raw: UUID) {
     companion object {
-        fun mint() = EntityId(UUID.randomUUID())
+        fun mint() =
+            EntityId(UUID.randomUUID())
     }
 }
 

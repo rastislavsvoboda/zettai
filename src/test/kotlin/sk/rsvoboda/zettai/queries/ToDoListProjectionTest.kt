@@ -23,12 +23,12 @@ internal class ToDoListProjectionTest {
 
         val projection = events.buildListProjection()
 
-        expectThat(projection.findAll(user))
+        expectThat(projection.findAll(user).toList())
             .isEqualTo(listOf(listName1, listName2))
     }
 
     @Test
-    fun `findList get list with correct items`(){
+    fun `findList get list with correct items`() {
         val user = randomUser()
         val listName = randomListName()
         val id = ToDoListId.mint()

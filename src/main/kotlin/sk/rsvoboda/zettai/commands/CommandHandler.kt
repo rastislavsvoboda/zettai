@@ -1,13 +1,12 @@
 package sk.rsvoboda.zettai.commands
 
-import sk.rsvoboda.zettai.domain.*
+import sk.rsvoboda.zettai.domain.InconsistentStateError
+import sk.rsvoboda.zettai.domain.ToDoListCommandError
+import sk.rsvoboda.zettai.domain.ToDoListRetriever
+import sk.rsvoboda.zettai.domain.ZettaiOutcome
 import sk.rsvoboda.zettai.events.*
 import sk.rsvoboda.zettai.fp.asFailure
 import sk.rsvoboda.zettai.fp.asSuccess
-
-interface ToDoListRetriever {
-    fun retrieveByName(user: User, listName: ListName): ToDoListState?
-}
 
 typealias ToDoListCommandOutcome = ZettaiOutcome<List<ToDoListEvent>>
 

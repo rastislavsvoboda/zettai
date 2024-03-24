@@ -38,5 +38,6 @@ class ToDoListHub(
             listProjection
                 .findAll(user)
                 .failIfNull(InvalidRequestError("User $user not found!"))
+                .transform { it.toList() }
         }.runIt()
 }

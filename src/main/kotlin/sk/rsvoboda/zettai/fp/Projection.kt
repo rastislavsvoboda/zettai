@@ -29,4 +29,5 @@ data class CreateRow<R : Any>(val rowId: RowId, val row: R) : DeltaRow<R>()
 data class DeleteRow<R : Any>(val rowId: RowId) : DeltaRow<R>()
 data class UpdateRow<R : Any>(val rowId: RowId, val updateRow: R.() -> R) : DeltaRow<R>()
 
-fun <T:Any> DeltaRow<T>.toSingle(): List<DeltaRow<T>> = listOf(this)
+fun <T : Any> DeltaRow<T>.toSingle(): List<DeltaRow<T>> =
+    listOf(this)
