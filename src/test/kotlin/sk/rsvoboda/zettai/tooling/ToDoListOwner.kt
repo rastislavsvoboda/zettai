@@ -5,6 +5,7 @@ import sk.rsvoboda.zettai.domain.ListName
 import sk.rsvoboda.zettai.domain.ToDoItem
 import sk.rsvoboda.zettai.domain.ToDoList
 import sk.rsvoboda.zettai.domain.User
+import sk.rsvoboda.zettai.domain.tooling.expectSuccess
 import strikt.api.Assertion
 import strikt.api.expectThat
 import strikt.assertions.*
@@ -12,39 +13,29 @@ import strikt.assertions.*
 data class ToDoListOwner(override val name: String) : DdtActor<ZettaiActions>() {
     val user = User(name)
 
-    fun `can see #listname with #itemnames`(
-        listName: String,
-        expectedItems: List<String>
-    ) =
+    fun `can see #listname with #itemnames`(listName: String, expectedItems: List<String>) =
         step(listName, expectedItems) {
-            val list = getToDoList(user, ListName(listName))
-
+            val list = getToDoList(user, ListName.fromUntrustedOrThrow(listName)).expectSuccess()
             expectThat(list)
-                .isNotNull()
-                .itemNames.containsExactlyInAnyOrder(expectedItems)
+                .itemNames
+                .containsExactlyInAnyOrder(expectedItems)
         }
 
     fun `cannot see #listname`(listName: String) =
         step(listName) {
-            val list = getToDoList(user, ListName.fromUntrustedOrThrow(listName))
-            expectThat(list).isNull()
-        }
-
-    fun `can add #item to #listname`(itemName: String, listName: String) =
-        step(itemName, listName) {
-            val item = ToDoItem(itemName)
-            addListItem(user, ListName(listName), item)
+            val lists = allUserLists(user).expectSuccess()
+            expectThat(lists.map { it.name }).doesNotContain(listName)
         }
 
     fun `cannot see any list`() =
         step {
-            val lists = allUserList(user)
+            val lists = allUserLists(user).expectSuccess()
             expectThat(lists).isEmpty()
         }
 
     fun `can see the lists #listNames`(expectedLists: Set<String>) =
         step(expectedLists) {
-            val lists = allUserList(user)
+            val lists = allUserLists(user).expectSuccess()
             expectThat(lists)
                 .map(ListName::name)
                 .containsExactly(expectedLists)
@@ -52,7 +43,13 @@ data class ToDoListOwner(override val name: String) : DdtActor<ZettaiActions>() 
 
     fun `can create a new list called #listname`(listName: String) =
         step(listName) {
-            createList(user, ListName.fromUntrustedOrThrow(listName))
+            `starts with a list`(listName, emptyList())
+        }
+
+    fun `can add #item to #listname`(itemName: String, listName: String) =
+        step(itemName, listName) {
+            val item = ToDoItem(itemName)
+            addListItem(user, ListName.fromUntrustedOrThrow(listName), item)
         }
 
     private val Assertion.Builder<ToDoList>.itemNames
